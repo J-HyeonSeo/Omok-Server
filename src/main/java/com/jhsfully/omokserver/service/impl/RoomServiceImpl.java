@@ -27,7 +27,7 @@ public class RoomServiceImpl implements RoomService {
             .playerIdList(Collections.singletonList(playerId))
             .build();
 
-        room.getBoard().set(Room.IX(14, 14), Piece.BLACK);
+        room.getBoard()[Room.IX(14, 14)] = Piece.BLACK;
 
         roomRepository.save(room);
 

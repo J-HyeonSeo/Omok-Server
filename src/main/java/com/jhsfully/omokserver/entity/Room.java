@@ -5,7 +5,6 @@ import com.jhsfully.omokserver.type.State;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,11 +33,13 @@ public class Room {
     private LocalDateTime turnedAt;
     private String winnerPlayerId;
     @Builder.Default
-    private List<Piece> board = initializeBoard();
+    private Piece[] board = initializeBoard();
 
-    private static List<Piece> initializeBoard() {
-        List<Piece> newBoard = new ArrayList<>(Arrays.asList(new Piece[15 * 15]));
-        Collections.fill(newBoard, Piece.NONE);
+    private final static int MAX_INDEX = 15;
+
+    private static Piece[] initializeBoard() {
+        Piece[] newBoard = new Piece[15 * 15];
+        Arrays.fill(newBoard, Piece.NONE);
         return newBoard;
     }
 
