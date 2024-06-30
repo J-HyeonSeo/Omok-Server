@@ -1,5 +1,6 @@
 package com.jhsfully.omokserver.controller;
 
+import com.jhsfully.omokserver.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,14 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/game")
 public class GameController {
 
+    private final GameService gameService;
+
     /**
      * 오목방 게임 데이터를 주기적으로 호출되어 응답을 전달하는 메서드입니다.
      * (해당 메서드의 응답을 통해, 게임의 진행 상황을 감시하고 결정합니다.)
      * @return
      */
-    @GetMapping
-    public ResponseEntity<?> getGameData() {
-        return null;
+    @GetMapping("/{roomId}")
+    public ResponseEntity<?> getGameData(@PathVariable String roomId) {
+        return ResponseEntity.ok(gameService.getGameData(roomId));
     }
 
     /**
