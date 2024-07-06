@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CreateRoomRequestDto {
+public class EnterRoomRequestDto {
 
-    @NotBlank(message = "방 제목을 입력해주세요.")
-    @Size(min = 2, max = 15, message = "방 제목은 2~15 자로 입력해주세요.")
-    private String roomTitle;
+    @NotBlank(message = "방 ID는 필수 값입니다.")
+    private String roomId;
 
     @NotBlank(message = "플레이어명을 입력해주세요.")
     @Size(min = 2, max = 15, message = "플레이어명은 2~7 자로 입력해주세요.")
     private String playerName;
+
 }

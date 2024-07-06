@@ -1,13 +1,16 @@
 package com.jhsfully.omokserver.controller;
 
+import com.jhsfully.omokserver.dto.AuthDto;
 import com.jhsfully.omokserver.dto.RoomCreateAndEnterDto;
 import com.jhsfully.omokserver.dto.RoomSimpleDto;
 import com.jhsfully.omokserver.dto.request.CreateRoomRequestDto;
+import com.jhsfully.omokserver.dto.request.EnterRoomRequestDto;
 import com.jhsfully.omokserver.service.RoomService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,22 +44,23 @@ public class RoomController {
      */
     @PostMapping("/public")
     public ResponseEntity<RoomCreateAndEnterDto> createRoom(@RequestBody @Valid CreateRoomRequestDto roomRequestDto) {
-        return ResponseEntity.ok(roomService.createRoom(roomRequestDto));
+        return ResponseEntity.ok(roomService.createRoomAndPlayer(roomRequestDto));
     }
 
     /**
      * 이미 만들어진 오목 게임방에 입장합니다.
      */
-    @PatchMapping("/private/{roomId}")
-    public ResponseEntity<?> enterRoom(@PathVariable String roomId) {
-        return null;
+    @PatchMapping("/private")
+    public ResponseEntity<RoomCreateAndEnterDto> enterRoom(@RequestBody @Valid EnterRoomRequestDto enterRoomRequestDto) {
+        return ResponseEntity.ok(roomService.enterRoomAndCreatePlayer(enterRoomRequestDto));
     }
 
     /**
      * 오목 게임방을 삭제합니다.
      */
     @DeleteMapping("/private/{roomId}")
-    public ResponseEntity<?> deleteRoom(@PathVariable String roomId) {
+    public ResponseEntity<?> exitRoom(@PathVariable String roomId, @AuthenticationPrincipal AuthDto authDto) {
+
         return null;
     }
 

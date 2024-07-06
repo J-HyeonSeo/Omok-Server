@@ -1,8 +1,10 @@
 package com.jhsfully.omokserver.controller;
 
+import com.jhsfully.omokserver.dto.AuthDto;
 import com.jhsfully.omokserver.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +28,9 @@ public class GameController {
      * @return
      */
     @GetMapping("/{roomId}")
-    public ResponseEntity<?> getGameData(@PathVariable String roomId) {
-        return ResponseEntity.ok(gameService.getGameData(roomId));
+    public ResponseEntity<?> getGameData(@PathVariable String roomId, @AuthenticationPrincipal
+        AuthDto authDto) {
+        return ResponseEntity.ok(gameService.getGameData(roomId, authDto.getPlayerId()));
     }
 
     /**

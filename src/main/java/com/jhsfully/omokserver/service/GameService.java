@@ -1,7 +1,7 @@
 package com.jhsfully.omokserver.service;
 
-import com.jhsfully.omokserver.entity.Room;
+import com.jhsfully.omokserver.dto.RoomDetailDto;
 
 public interface GameService {
-    Room getGameData(String roomId);
+    RoomDetailDto getGameData(String roomId, String playerId);
 }

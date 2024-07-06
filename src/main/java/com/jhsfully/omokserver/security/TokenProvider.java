@@ -1,5 +1,6 @@
 package com.jhsfully.omokserver.security;
 
+import com.jhsfully.omokserver.dto.AuthDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -7,12 +8,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -48,13 +51,13 @@ public class TokenProvider {
 
     //토큰을 통해, 인증 객체 생성.
     public Authentication getAuthentication(String token) {
-        Long memberId = getPlayerId(token);
-        return new UsernamePasswordAuthenticationToken(memberId, "");
+        String playerId = getPlayerId(token);
+        return new UsernamePasswordAuthenticationToken(new AuthDto(playerId), "", Collections.singleton(new SimpleGrantedAuthority("ROLE_PLAYER")));
     }
 
     //회원 번호 가져오기.
-    private Long getPlayerId(String token) {
-        return this.parseClaims(token).get(PLAYER_ID, Long.class);
+    private String getPlayerId(String token) {
+        return this.parseClaims(token).get(PLAYER_ID, String.class);
     }
 
     //토큰 유효기간 검증.
