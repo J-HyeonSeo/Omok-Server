@@ -1,8 +1,8 @@
 package com.jhsfully.omokserver.entity;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -14,6 +14,6 @@ public class Player {
     @Id
     private String playerId;
     private String playerName;
-    private long heartBeat;
+    private LocalDateTime lastConnectedAt;
 
 }
