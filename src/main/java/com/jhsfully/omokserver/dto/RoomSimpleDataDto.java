@@ -10,6 +10,6 @@ import lombok.Setter;
 public class RoomSimpleDataDto {
 
     private String roomId;
-    private String playerId;
+    private String accessToken;
 
 }

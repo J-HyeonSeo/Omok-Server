@@ -3,8 +3,8 @@ package com.jhsfully.omokserver.service.impl;
 import com.jhsfully.omokserver.dao.RoomRepository;
 import com.jhsfully.omokserver.dto.RoomSimpleDataDto;
 import com.jhsfully.omokserver.entity.Room;
+import com.jhsfully.omokserver.security.TokenProvider;
 import com.jhsfully.omokserver.service.RoomService;
-import com.jhsfully.omokserver.type.Piece;
 import java.util.Collections;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final TokenProvider tokenProvider;
 
     @Override
     public RoomSimpleDataDto createRoom() {
@@ -27,10 +28,9 @@ public class RoomServiceImpl implements RoomService {
             .playerIdList(Collections.singletonList(playerId))
             .build();
 
-        room.getBoard()[Room.IX(14, 14)] = Piece.BLACK;
+        Room createdRoom = roomRepository.save(room);
 
-        roomRepository.save(room);
-
-        return new RoomSimpleDataDto(roomId, playerId);
+        return new RoomSimpleDataDto(createdRoom.getRoomId(),
+            tokenProvider.generateAccessToken(playerId));
     }
 }

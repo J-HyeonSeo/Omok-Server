@@ -5,4 +5,4 @@ spring:
       port: 6379
 
   jwt:
-    secret: THIS YOUR JWT KEY
+    secret: THIS YOUR JWT KEY, THIS YOUR JWT KEY, THIS YOUR JWT KEY

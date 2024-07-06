@@ -28,10 +28,10 @@ public class JwtFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        } else {
+        } /*else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
-        }
+        }*/
 
         filterChain.doFilter(request, response);
     }

@@ -23,10 +23,10 @@ public class TokenProvider {
     @Value("${spring.jwt.secret}")
     private String secretKey;
     private static final String PLAYER_ID = "playerId";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;//1초 -> 1분 -> 30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60;//1초 -> 1분 -> 1시간
 
     //Access 토큰 생성
-    public String generateAccessToken(Long playerId) {
+    public String generateAccessToken(String playerId) {
         ClaimsBuilder claims = Jwts.claims();
         claims.add(PLAYER_ID, playerId);
 
