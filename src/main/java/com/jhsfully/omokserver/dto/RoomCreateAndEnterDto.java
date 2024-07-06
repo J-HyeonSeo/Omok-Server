@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class RoomSimpleDataDto {
+public class RoomCreateAndEnterDto {
 
     private String roomId;
     private String accessToken;

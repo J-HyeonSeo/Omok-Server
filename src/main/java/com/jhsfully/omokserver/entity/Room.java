@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 @Getter
 @Setter
@@ -24,12 +25,14 @@ public class Room {
 
     @Id
     private String roomId;
+    private String roomTitle;
     @Builder.Default
     private List<String> playerIdList = new ArrayList<>();
     private String blackPlayerId;
     private String whitePlayerId;
     @Builder.Default
-    private State nowState = State.BLACK;
+    @Indexed
+    private State nowState = State.WAIT;
     private LocalDateTime turnedAt;
     private String winnerPlayerId;
     @Builder.Default

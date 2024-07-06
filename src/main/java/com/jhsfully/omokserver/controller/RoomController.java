@@ -1,7 +1,11 @@
 package com.jhsfully.omokserver.controller;
 
-import com.jhsfully.omokserver.dto.RoomSimpleDataDto;
+import com.jhsfully.omokserver.dto.RoomCreateAndEnterDto;
+import com.jhsfully.omokserver.dto.RoomSimpleDto;
+import com.jhsfully.omokserver.dto.request.CreateRoomRequestDto;
 import com.jhsfully.omokserver.service.RoomService;
+import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,16 +32,16 @@ public class RoomController {
      * 현재 게임 대전 상대를 기다리있는 방 목록을 조회합니다. (PlayerList가 1인 경우)
      */
     @GetMapping("/public")
-    public ResponseEntity<?> getRoomList() {
-        return null;
+    public ResponseEntity<List<RoomSimpleDto>> getRoomList() {
+        return ResponseEntity.ok(roomService.getRoomWaitingRoomList());
     }
 
     /**
      * 오목 게임방을 만들고 이에 대한 정보를 리턴합니다.
      */
     @PostMapping("/public")
-    public ResponseEntity<RoomSimpleDataDto> createRoom() {
-        return ResponseEntity.ok(roomService.createRoom());
+    public ResponseEntity<RoomCreateAndEnterDto> createRoom(@RequestBody @Valid CreateRoomRequestDto roomRequestDto) {
+        return ResponseEntity.ok(roomService.createRoom(roomRequestDto));
     }
 
     /**
