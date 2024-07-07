@@ -26,4 +26,16 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message));
     }
 
+    @ExceptionHandler({RuntimeException.class})
+    public ResponseEntity<?> runtimeExceptionHandler(RuntimeException e) {
+        String message = e.getMessage();
+
+        if (!StringUtils.hasText(message)) {
+            message = "요청된 값이 올바르지 않습니다.";
+        }
+
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message));
+    }
+
 }

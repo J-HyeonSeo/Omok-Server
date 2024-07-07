@@ -40,7 +40,7 @@ public class Room {
 
     private final static int MAX_INDEX = 15;
 
-    private static Piece[] initializeBoard() {
+    public static Piece[] initializeBoard() {
         Piece[] newBoard = new Piece[15 * 15];
         Arrays.fill(newBoard, Piece.NONE);
         return newBoard;

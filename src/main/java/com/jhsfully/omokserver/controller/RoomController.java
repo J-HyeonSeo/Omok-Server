@@ -50,7 +50,7 @@ public class RoomController {
     /**
      * 이미 만들어진 오목 게임방에 입장합니다.
      */
-    @PatchMapping("/private")
+    @PatchMapping("/public/enter")
     public ResponseEntity<RoomCreateAndEnterDto> enterRoom(@RequestBody @Valid EnterRoomRequestDto enterRoomRequestDto) {
         return ResponseEntity.ok(roomService.enterRoomAndCreatePlayer(enterRoomRequestDto));
     }
@@ -58,10 +58,10 @@ public class RoomController {
     /**
      * 오목 게임방을 삭제합니다.
      */
-    @DeleteMapping("/private/{roomId}")
-    public ResponseEntity<?> exitRoom(@PathVariable String roomId, @AuthenticationPrincipal AuthDto authDto) {
-
-        return null;
+    @DeleteMapping("/private/exit/{roomId}")
+    public ResponseEntity<String> exitRoom(@PathVariable String roomId, @AuthenticationPrincipal AuthDto authDto) {
+        roomService.exitRoom(roomId, authDto.getPlayerId());
+        return ResponseEntity.ok("성공");
     }
 
 }

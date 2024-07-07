@@ -19,7 +19,6 @@ public class RoomDetailDto {
     private String roomTitle;
     private List<String> playerIdList;
     private String blackPlayerId;
-    private String blackPlayerName;
     private String whitePlayerId;
     private String otherPlayerName;
     private State nowState;

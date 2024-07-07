@@ -98,6 +98,7 @@ public class RoomServiceImpl implements RoomService {
         room.setWhitePlayerId(null);
         room.setNowState(State.WAIT);
         room.setTurnedAt(null);
+        room.setBoard(Room.initializeBoard());
 
         // 수정된 Room을 저장합니다.
         roomRepository.save(room);

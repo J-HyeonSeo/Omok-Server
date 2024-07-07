@@ -13,9 +13,11 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
@@ -43,17 +45,25 @@ public class GameServiceImpl implements GameService {
 
         // 상대방 정보 가져오기.
         Player otherPlayer = getOtherPlayer(room, playerId);
+        String playerName = "";
 
         // 상대방에 대한 통신상태 확인하기.
-        long otherPlayerConnectedDiff = ChronoUnit.SECONDS.between(
-            Objects.requireNonNull(otherPlayer).getLastConnectedAt(), LocalDateTime.now());
+        if (otherPlayer != null) {
+            playerName = otherPlayer.getPlayerName();
+            long otherPlayerConnectedDiff = ChronoUnit.SECONDS.between(
+                otherPlayer.getLastConnectedAt(), LocalDateTime.now());
 
-        if (otherPlayerConnectedDiff >= DISCONNECT_LIMIT_SECOND ) {
-            room.setNowState(State.DISCONNECTED);
+            log.info(otherPlayerConnectedDiff + "");
+
+            if (otherPlayerConnectedDiff >= DISCONNECT_LIMIT_SECOND) {
+                room.setNowState(State.DISCONNECTED);
+            }
         }
 
-        return RoomDetailDto.of(roomRepository.findById(roomId).orElseThrow(),
-            otherPlayer.getPlayerName());
+        Room updatedRoom = roomRepository.save(room);
+
+        return RoomDetailDto.of(updatedRoom,
+            playerName);
     }
 
     @Override
@@ -176,8 +186,10 @@ public class GameServiceImpl implements GameService {
         // 남은 시간을 초 단위로 계산하기.
         long diffSeconds = ChronoUnit.SECONDS.between(room.getTurnedAt(), LocalDateTime.now());
 
+        log.info("시간 차이 => {}", diffSeconds);
+
         // 현재 턴 타임 안에 있는 경우
-        if (diffSeconds >= TURN_TIME) {
+        if (diffSeconds <= TURN_TIME) {
 
             String nowPlayerId = room.getNowState() == State.BLACK ? room.getBlackPlayerId() : room.getWhitePlayerId();
 
