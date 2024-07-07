@@ -28,6 +28,7 @@ public class GameServiceImpl implements GameService {
     private static final int SAM_SAM_RANGE = 3;
     private static final int RESULT_CHECK_RANGE = 4;
     private static final int DISCONNECT_LIMIT_SECOND = 3;
+    private static final int TURN_TIME = 45;
 
     @Override
     public RoomDetailDto getGameData(String roomId, String playerId) {
@@ -175,8 +176,8 @@ public class GameServiceImpl implements GameService {
         // 남은 시간을 초 단위로 계산하기.
         long diffSeconds = ChronoUnit.SECONDS.between(room.getTurnedAt(), LocalDateTime.now());
 
-        // 시간 차이가 남아있는 경우
-        if (diffSeconds >= 0) {
+        // 현재 턴 타임 안에 있는 경우
+        if (diffSeconds >= TURN_TIME) {
 
             String nowPlayerId = room.getNowState() == State.BLACK ? room.getBlackPlayerId() : room.getWhitePlayerId();
 
@@ -184,7 +185,7 @@ public class GameServiceImpl implements GameService {
                 throw new RuntimeException("현재 턴이 아닙니다.");
             }
 
-        } else { // 음수 인 경우, State가 업데이트 되지 않은 경우 이므로, 반대로 가져오고, State를 업데이트 해야함.
+        } else { // 턴 타임이 초과 된 경우, 반대로 고려 할 것!
 
             String nowPlayerId = room.getNowState() == State.WHITE ? room.getBlackPlayerId() : room.getWhitePlayerId();
 
