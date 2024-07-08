@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.RedisHash;
 @Getter
 @AllArgsConstructor
 @Builder
-@RedisHash(value = "Player") //TODO 오목게임의 최대시간을 계산해서 TTL을 계산해서 기입!
+@RedisHash(value = "Player", timeToLive = 3600)
 public class Player {
 
     @Id

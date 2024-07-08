@@ -30,7 +30,7 @@ public class GameServiceImpl implements GameService {
     private static final int SAM_SAM_RANGE = 3;
     private static final int RESULT_CHECK_RANGE = 4;
     private static final int DISCONNECT_LIMIT_SECOND = 3;
-    private static final int TURN_TIME = 45;
+    private static final int TURN_TIME = 20;
 
     @Override
     public RoomDetailDto getGameData(String roomId, String playerId) {
@@ -42,6 +42,7 @@ public class GameServiceImpl implements GameService {
 
         // 최근 연결된 시각을 업데이트 하여, 클라이언트의 연결 상태를 업데이트.
         player.updateLastConnectedAt(LocalDateTime.now());
+        playerRepository.save(player);
 
         // 상대방 정보 가져오기.
         Player otherPlayer = getOtherPlayer(room, playerId);
