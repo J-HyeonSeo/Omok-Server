@@ -20,7 +20,7 @@ import org.springframework.data.redis.core.index.Indexed;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@RedisHash(value = "Room")
+@RedisHash(value = "Room", timeToLive = 4500)
 public class Room {
 
     @Id
