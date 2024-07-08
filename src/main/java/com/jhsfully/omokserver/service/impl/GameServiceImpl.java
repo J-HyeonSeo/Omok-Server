@@ -24,8 +24,8 @@ public class GameServiceImpl implements GameService {
 
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
-    private static final int[] DX = {-1, 1, 0, 0, -1, -1, 1, 1};
-    private static final int[] DY = {0, 0, -1, 1, -1, 1, -1, 1};
+    //총 4개의 그룹으로 나누어서 방향을 지정할 것.
+    private static final int[][][] DIRS = {{{-1, 0}, {1, 0}}, {{0, -1}, {0, 1}}, {{-1, -1}, {1, 1}}, {{-1, 1}, {1, -1}}};
     private static final int DIRECTION_SIZE = 8;
     private static final int SAM_SAM_RANGE = 3;
     private static final int RESULT_CHECK_RANGE = 4;
@@ -86,97 +86,39 @@ public class GameServiceImpl implements GameService {
             throw new RuntimeException("이미 해당 자리에는 돌이 존재합니다.");
         }
 
-        // 만약 흑돌 플레이어 인 경우, 33을 두었는지 검증 해야함(렌주룰)
-        if (room.getBlackPlayerId().equals(playerId)) {
-            validateSamSam(room.getBoard(), row, col);
+        // 결과 판정
+        boolean result = isWin(room.getBoard(), nowPiece, row, col);
+
+        // 승자 일 경우 WinnerId를 할당함.
+        if (result) {
+            room.setWinnerPlayerId(playerId);
+        } else if (nowPiece == Piece.BLACK) {
+
+            // 3*3을 체크 해야 함.
+            boolean isSamSam = isSamSam(room.getBoard(), row, col);
+
+            // 4*4를 체크 해야 함.
+            boolean isSaSa = isSaSa(room.getBoard(), row, col);
+
+            // 둘 중 하나라도 해당 될 경우..
+            if (isSamSam || isSaSa) {
+                throw new RuntimeException("흑돌은 3*3 또는 4*4를 둘 수 없습니다.");
+            }
         }
 
         // 오목돌을 두기
         room.getBoard()[Room.IX(row, col)] = nowPiece;
 
-        // 결과 판정
-        boolean result = checkWinner(room.getBoard(), nowPiece, row, col);
+        // 턴 넘기기 설정
+        room.setNowState(nextState);
+        room.setTurnedAt(LocalDateTime.now());
 
-        if (result) {
-            room.setWinnerPlayerId(playerId);
-        } else {
-            room.setNowState(nextState);
-            room.setTurnedAt(LocalDateTime.now());
-        }
-
+        // 방 정보 Redis에 업데이트
         Room updatedRoom = roomRepository.save(room);
 
+        // 결과 리턴
         return RoomDetailDto.of(updatedRoom,
             Objects.requireNonNull(getOtherPlayer(room, playerId)).getPlayerId());
-    }
-
-    private boolean checkWinner(Piece[] board, Piece nowPiece, int row, int col) {
-
-        // 본인 방향 중심으로 8방향으로 4칸의 현재 PIECE가 나오는지 확인.
-        for (int i = 0; i < DIRECTION_SIZE; i++) {
-            int pieceCnt = 0;
-            int nowRow = row;
-            int nowCol = col;
-            for (int j = 0; j < RESULT_CHECK_RANGE; j++) {
-                nowRow += DX[i];
-                nowCol += DY[i];
-
-                // 범위 확인.
-                if (nowRow < 0 || nowCol < 0 || nowRow > 14 || nowCol > 14) {
-                    break;
-                }
-
-                if (board[Room.IX(nowRow, nowCol)] == nowPiece) {
-                    pieceCnt++;
-                }
-
-            }
-
-            // 이겼음. 나이스~ :)
-            if (pieceCnt == 4) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // 흑돌이 3*3 규칙을 어겼는지 확인하는 밸리데이션.
-    private void validateSamSam(Piece[] board, int row, int col) {
-
-        int cnt = 0;
-
-        // 본인 방향 중심으로 8방향으로 다음 3칸 범위까지 2개의 돌이 있으면 체크
-        for (int i = 0; i < DIRECTION_SIZE; i++) {
-            int blackCnt = 0;
-            int nowRow = row;
-            int nowCol = col;
-            for (int j = 0; j < SAM_SAM_RANGE; j++) {
-                nowRow += DX[i];
-                nowCol += DY[i];
-
-                // 범위 확인.
-                if (nowRow < 0 || nowCol < 0 || nowRow > 14 || nowCol > 14) {
-                    break;
-                }
-
-                if (board[Room.IX(nowRow, nowCol)] == Piece.BLACK) {
-                    blackCnt++;
-                }
-
-            }
-
-            // 3*3의 징조가 보임.
-            if (blackCnt == 2) {
-                cnt++;
-            }
-        }
-
-        // 3*3을 적발함. 수고링 :)
-        if (cnt >= 2) {
-            throw new RuntimeException("흑돌은 해당 위치에 둘 수 없습니다.");
-        }
-
     }
 
     private void validatePutPiece(String playerId, Room room) {
@@ -235,4 +177,66 @@ public class GameServiceImpl implements GameService {
 
     }
 
+    /*
+        ##########################################################################################
+        ######################        GAME VALIDATION LOGIC      #################################
+        ##########################################################################################
+    */
+
+    // 흑돌에 대한 승리 판별 로직. (흑돌은 장목을 둘 수 없음. (육목 이상 불가능))
+    private boolean isWin(Piece[] board, Piece nowPiece, int row, int col) {
+        for (int[][] directionGroup : DIRS) {
+
+            int[] firstDir = directionGroup[0];
+            int[] secondDir = directionGroup[1];
+
+            int pieceCount = 1;
+            pieceCount += findForwardedConnectedPieceCount(board, Piece.BLACK, row, col, firstDir[0], firstDir[1]);
+            pieceCount += findForwardedConnectedPieceCount(board, Piece.BLACK, row, col, secondDir[0], secondDir[1]);
+
+            // 흑돌이라면, 정확히 오목을 구성해야 이길 수 있음.
+            if (pieceCount == 5 && nowPiece == Piece.BLACK) {
+                return true;
+            }
+
+            // 백돌이라면, 5~9목을 달성해도 이길 수 있음.
+            if (pieceCount >= 5 && pieceCount <= 9 && nowPiece == Piece.WHITE) {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    // 흑돌은 렌주룰에 의거하여 3*3을 둘 수 없음.
+    private boolean isSamSam(Piece[] board, int row, int col) {
+        return false;
+    }
+
+    // 흑돌은 렌주룰에 의거하여 4*4를 둘 수 없음.
+    private boolean isSaSa(Piece[] board, int row, int col) {
+        return false;
+    }
+
+    // 기점으로 부터 지정한 방향으로 N칸 까지 특정 오목돌의 색깔의 갯수를 반환하는 함수
+    private int findForwardedPieceCount(Piece[] board, Piece nowPiece, int row, int col, int dx, int dy) {
+        return 0;
+    }
+
+    // 기점으로 부터 지정한 방향으로 쭉 연결된 지정된 오목돌의 갯수를 반환하는 함수
+    private int findForwardedConnectedPieceCount(Piece[] board, Piece nowPiece, int row, int col, int dx, int dy) {
+
+        int cnt = 0;
+
+        row += dx;
+        col += dy;
+
+        if (board[Room.IX(row, col)] == nowPiece) {
+            cnt++;
+            cnt += findForwardedConnectedPieceCount(board, nowPiece, row, col, dx, dy);
+        }
+
+        return cnt;
+    }
 }
