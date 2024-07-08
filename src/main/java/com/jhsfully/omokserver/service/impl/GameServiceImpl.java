@@ -191,8 +191,8 @@ public class GameServiceImpl implements GameService {
             int[] secondDir = directionGroup[1];
 
             int pieceCount = 1;
-            pieceCount += findForwardedConnectedPieceCount(board, Piece.BLACK, row, col, firstDir[0], firstDir[1]);
-            pieceCount += findForwardedConnectedPieceCount(board, Piece.BLACK, row, col, secondDir[0], secondDir[1]);
+            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, row, col, firstDir[0], firstDir[1]);
+            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, row, col, secondDir[0], secondDir[1]);
 
             // 흑돌이라면, 정확히 오목을 구성해야 이길 수 있음.
             if (pieceCount == 5 && nowPiece == Piece.BLACK) {
