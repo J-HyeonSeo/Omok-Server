@@ -183,7 +183,7 @@ public class GameServiceImpl implements GameService {
         ##########################################################################################
     */
 
-    // 흑돌에 대한 승리 판별 로직. (흑돌은 장목을 둘 수 없음. (육목 이상 불가능))
+    // 승리 판별 로직. (흑돌은 장목을 둘 수 없음. (육목 이상 불가능))
     private boolean isWin(Piece[] board, Piece nowPiece, int row, int col) {
         for (int[][] directionGroup : DIRS) {
 
