@@ -9,6 +9,7 @@ import com.jhsfully.omokserver.entity.Room;
 import com.jhsfully.omokserver.service.GameService;
 import com.jhsfully.omokserver.type.Piece;
 import com.jhsfully.omokserver.type.State;
+import com.jhsfully.omokserver.vo.FindPieceResult;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
@@ -26,9 +27,6 @@ public class GameServiceImpl implements GameService {
     private final PlayerRepository playerRepository;
     //총 4개의 그룹으로 나누어서 방향을 지정할 것.
     private static final int[][][] DIRS = {{{-1, 0}, {1, 0}}, {{0, -1}, {0, 1}}, {{-1, -1}, {1, 1}}, {{-1, 1}, {1, -1}}};
-    private static final int DIRECTION_SIZE = 8;
-    private static final int SAM_SAM_RANGE = 3;
-    private static final int RESULT_CHECK_RANGE = 4;
     private static final int DISCONNECT_LIMIT_SECOND = 3;
     private static final int TURN_TIME = 20;
 
@@ -191,8 +189,8 @@ public class GameServiceImpl implements GameService {
             int[] secondDir = directionGroup[1];
 
             int pieceCount = 1;
-            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, row, col, firstDir[0], firstDir[1]);
-            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, row, col, secondDir[0], secondDir[1]);
+            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, true, row, col, firstDir[0], firstDir[1]).getCount();
+            pieceCount += findForwardedConnectedPieceCount(board, nowPiece, true, row, col, secondDir[0], secondDir[1]).getCount();
 
             // 흑돌이라면, 정확히 오목을 구성해야 이길 수 있음.
             if (pieceCount == 5 && nowPiece == Piece.BLACK) {
@@ -211,32 +209,151 @@ public class GameServiceImpl implements GameService {
 
     // 흑돌은 렌주룰에 의거하여 3*3을 둘 수 없음.
     private boolean isSamSam(Piece[] board, int row, int col) {
-        return false;
+
+        int onceThreeCnt = 0;
+
+        for (int[][] directionGroup : DIRS) {
+            int[] firstDir = directionGroup[0];
+            int[] secondDir = directionGroup[1];
+
+            FindPieceResult[] candidateResult = new FindPieceResult[2];
+
+            // 첫 번째 결과 구하기.
+            FindPieceResult firstPieceResult = findForwardedConnectedPieceCount(board, Piece.BLACK, true, row, col, firstDir[0], firstDir[1]);
+            FindPieceResult firstPieceResultWithOneSpace = findForwardedConnectedPieceCount(board, Piece.BLACK, false, row, col, firstDir[0], firstDir[1]);
+
+            // 두 번째 결과 구하기.
+            FindPieceResult secondPieceResult = findForwardedConnectedPieceCount(board, Piece.BLACK, true, row, col, secondDir[0], secondDir[1]);
+            FindPieceResult secondPieceResultWithOneSpace = findForwardedConnectedPieceCount(board, Piece.BLACK, false, row, col, secondDir[0], secondDir[1]);
+
+            // 결과 조합하기.
+            int candidateCnt = 0;
+
+            // 띄우기 없이 전부 하나로 이어진 경우
+            if (firstPieceResult.getCount() + secondPieceResult.getCount() == 2) {
+                candidateResult[0] = firstPieceResult;
+                candidateResult[1] = secondPieceResult;
+                candidateCnt++;
+            }
+
+            // 하나는 붙인 경우, 하나는 띄운 경우 && 1번 조합과 갯수가 다른 경우
+            if (firstPieceResult.getCount() + secondPieceResultWithOneSpace.getCount() == 2
+                && secondPieceResult != secondPieceResultWithOneSpace) {
+                candidateResult[0] = firstPieceResult;
+                candidateResult[1] = secondPieceResultWithOneSpace;
+                candidateCnt++;
+            }
+
+            // 하나는 띄운 경우, 하나는 붙인 경우 && 1번 조합과 갯수가 다른 경우
+            if (firstPieceResultWithOneSpace.getCount() + secondPieceResult.getCount() == 2
+                && firstPieceResult != firstPieceResultWithOneSpace) {
+                candidateResult[0] = firstPieceResultWithOneSpace;
+                candidateResult[1] = secondPieceResult;
+                candidateCnt++;
+            }
+
+            // 유일한 조합 이외에 또 다른 조합이 있다면, 3에 해당 되지 않음.
+            if (candidateCnt > 1) {
+                continue;
+            }
+
+            // Open33 검증.
+            FindPieceResult firstNextPiece = findForwardedNonePiece(board,
+                candidateResult[0].getEndRow(), candidateResult[0].getEndCol(), firstDir[0], firstDir[1]);
+            FindPieceResult secondNextPiece = findForwardedNonePiece(board,
+                candidateResult[1].getEndRow(), candidateResult[1].getEndCol(), secondDir[0], secondDir[1]);
+
+            // 공격할 범위가 미리 막혀있어, 닫힌 33임.
+            if (firstNextPiece.getDistance() <= 1 && secondNextPiece.getDistance() <= 1) {
+                continue;
+            }
+
+            // 거리가 2이하 인데, 돌 색깔이 검은색 일 경우.
+            if (firstNextPiece.getDistance() <= 2 && firstNextPiece.getLastPiece() == Piece.BLACK) {
+                continue;
+            }
+            if (secondNextPiece.getDistance() <= 2 && secondNextPiece.getLastPiece() == Piece.BLACK) {
+                continue;
+            }
+
+            onceThreeCnt++; // 모든 조건을 뚫었다면, Open3 해당되는 그룹임.
+
+        }
+
+        return onceThreeCnt >= 2;
     }
 
     // 흑돌은 렌주룰에 의거하여 4*4를 둘 수 없음.
     private boolean isSaSa(Piece[] board, int row, int col) {
+
+        for (int[][] directionGroup : DIRS) {
+            int[] firstDir = directionGroup[0];
+            int[] secondDir = directionGroup[1];
+        }
+
         return false;
     }
 
-    // 기점으로 부터 지정한 방향으로 N칸 까지 특정 오목돌의 색깔의 갯수를 반환하는 함수
-    private int findForwardedPieceCount(Piece[] board, Piece nowPiece, int row, int col, int dx, int dy) {
-        return 0;
-    }
-
     // 기점으로 부터 지정한 방향으로 쭉 연결된 지정된 오목돌의 갯수를 반환하는 함수
-    private int findForwardedConnectedPieceCount(Piece[] board, Piece nowPiece, int row, int col, int dx, int dy) {
+    private FindPieceResult findForwardedConnectedPieceCount(Piece[] board, Piece nowPiece,
+        boolean isJumped, int row, int col, int dx, int dy) {
 
         int cnt = 0;
+        int lastPieceRow = row;
+        int lastPieceCol = col;
 
-        row += dx;
-        col += dy;
+        while (true) {
+            row += dx;
+            col += dy;
 
-        if (board[Room.IX(row, col)] == nowPiece) {
-            cnt++;
-            cnt += findForwardedConnectedPieceCount(board, nowPiece, row, col, dx, dy);
+            if (row < 0 || row > 14 || col < 0 || col > 14) {
+                break;
+            }
+
+            if (board[Room.IX(row, col)] == nowPiece) {
+                cnt++;
+                lastPieceRow = row;
+                lastPieceCol = col;
+            } else if (board[Room.IX(row, col)] == Piece.NONE && !isJumped) {
+                isJumped = true;
+            } else {
+                break;
+            }
         }
 
-        return cnt;
+        return new FindPieceResult(cnt, lastPieceRow, lastPieceCol);
     }
+
+    // 기점으로 부터 지정한 방향으로 특정 돌이 나오거나 벽이 나올 때 까지 탐색
+    private FindPieceResult findForwardedNonePiece(Piece[] board, int row, int col, int dx, int dy) {
+        int cnt = 0;
+        int lastPieceRow = row;
+        int lastPieceCol = col;
+        int distance = 0;
+        Piece lastPiece = board[Room.IX(row, col)];
+
+        while (true) {
+            row += dx;
+            col += dy;
+
+            if (row < 0 || row > 14 || col < 0 || col > 14) {
+                break;
+            }
+
+            distance++;
+
+            if (board[Room.IX(row, col)] == Piece.NONE) {
+                lastPiece = Piece.NONE;
+                cnt++;
+            } else {
+                lastPiece = board[Room.IX(row, col)];
+                lastPieceRow = row;
+                lastPieceCol = col;
+                break;
+            }
+        }
+
+        return new FindPieceResult(cnt, distance, lastPieceRow, lastPieceCol, lastPiece);
+    }
+
 }
