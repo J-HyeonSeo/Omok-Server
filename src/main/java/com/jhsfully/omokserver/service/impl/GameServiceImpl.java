@@ -33,6 +33,8 @@ public class GameServiceImpl implements GameService {
     @Override
     public RoomDetailDto getGameData(String roomId, String playerId) {
 
+        log.info("{}가 진입하였습니다.", playerId);
+
         Room room = roomRepository.findById(roomId).orElseThrow();
         Player player = playerRepository.findById(playerId).orElseThrow();
 
@@ -238,7 +240,7 @@ public class GameServiceImpl implements GameService {
 
             // 하나는 붙인 경우, 하나는 띄운 경우 && 1번 조합과 갯수가 다른 경우
             if (firstPieceResult.getCount() + secondPieceResultWithOneSpace.getCount() == 2
-                && secondPieceResult != secondPieceResultWithOneSpace) {
+                && secondPieceResult.getCount() != secondPieceResultWithOneSpace.getCount()) {
                 candidateResult[0] = firstPieceResult;
                 candidateResult[1] = secondPieceResultWithOneSpace;
                 candidateCnt++;
@@ -246,14 +248,14 @@ public class GameServiceImpl implements GameService {
 
             // 하나는 띄운 경우, 하나는 붙인 경우 && 1번 조합과 갯수가 다른 경우
             if (firstPieceResultWithOneSpace.getCount() + secondPieceResult.getCount() == 2
-                && firstPieceResult != firstPieceResultWithOneSpace) {
+                && firstPieceResult.getCount() != firstPieceResultWithOneSpace.getCount()) {
                 candidateResult[0] = firstPieceResultWithOneSpace;
                 candidateResult[1] = secondPieceResult;
                 candidateCnt++;
             }
 
             // 유일한 조합 이외에 또 다른 조합이 있다면, 3에 해당 되지 않음.
-            if (candidateCnt > 1) {
+            if (candidateCnt != 1) {
                 continue;
             }
 
