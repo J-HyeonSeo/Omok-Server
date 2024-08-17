@@ -265,16 +265,21 @@ public class GameServiceImpl implements GameService {
             FindPieceResult secondNextPiece = findForwardedNonePiece(board,
                 candidateResult[1].getEndRow(), candidateResult[1].getEndCol(), secondDir[0], secondDir[1]);
 
-            // 공격할 범위가 미리 막혀있어, 닫힌 33임.
-            if (firstNextPiece.getDistance() <= 1 && secondNextPiece.getDistance() <= 1) {
+            // 확실히 붙어서 막혀있는 경우. 닫힌 33임.
+            if (firstNextPiece.getDistance() <= 1 || secondNextPiece.getDistance() <= 1) {
+                continue;
+            }
+
+            // 양쪽으로 한 개씩 가두어지는 경우.
+            if (firstNextPiece.getDistance() == 2 && secondNextPiece.getDistance() == 2) {
                 continue;
             }
 
             // 거리가 2이하 인데, 돌 색깔이 검은색 일 경우.
-            if (firstNextPiece.getDistance() <= 2 && firstNextPiece.getLastPiece() == Piece.BLACK) {
+            if (firstNextPiece.getDistance() <= 3 && firstNextPiece.getLastPiece() == Piece.BLACK) {
                 continue;
             }
-            if (secondNextPiece.getDistance() <= 2 && secondNextPiece.getLastPiece() == Piece.BLACK) {
+            if (secondNextPiece.getDistance() <= 3 && secondNextPiece.getLastPiece() == Piece.BLACK) {
                 continue;
             }
 
