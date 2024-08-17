@@ -106,10 +106,10 @@ public class GameServiceImpl implements GameService {
         } else if (nowPiece == Piece.BLACK) {
 
             // 3*3을 체크 해야 함.
-            boolean isSamSam = isSamSam(room.getBoard(), row, col);
+            boolean isSamSam = isOpenThree(room.getBoard(), row, col);
 
             // 4*4를 체크 해야 함.
-            boolean isSaSa = isSaSa(room.getBoard(), row, col);
+            boolean isSaSa = isFour(room.getBoard(), row, col);
 
             // 둘 중 하나라도 해당 될 경우..
             if (isSamSam || isSaSa) {
@@ -210,9 +210,9 @@ public class GameServiceImpl implements GameService {
     }
 
     // 흑돌은 렌주룰에 의거하여 3*3을 둘 수 없음.
-    private boolean isSamSam(Piece[] board, int row, int col) {
+    private boolean isOpenThree(Piece[] board, int row, int col) {
 
-        int onceThreeCnt = 0;
+        int openThreeCnt = 0;
 
         for (int[][] directionGroup : DIRS) {
             int[] firstDir = directionGroup[0];
@@ -283,22 +283,68 @@ public class GameServiceImpl implements GameService {
                 continue;
             }
 
-            onceThreeCnt++; // 모든 조건을 뚫었다면, Open3 해당되는 그룹임.
+            openThreeCnt++; // 모든 조건을 뚫었다면, Open3 해당되는 그룹임.
 
         }
 
-        return onceThreeCnt >= 2;
+        return openThreeCnt >= 2;
     }
 
     // 흑돌은 렌주룰에 의거하여 4*4를 둘 수 없음.
-    private boolean isSaSa(Piece[] board, int row, int col) {
+    private boolean isFour(Piece[] board, int row, int col) {
+
+        int fourCnt = 0;
 
         for (int[][] directionGroup : DIRS) {
             int[] firstDir = directionGroup[0];
             int[] secondDir = directionGroup[1];
+
+            FindPieceResult[] candidateResult = new FindPieceResult[2];
+
+            // 첫 번째 결과 구하기.
+            FindPieceResult firstPieceResult = findForwardedConnectedPieceCount(board, Piece.BLACK, true, row, col, firstDir[0], firstDir[1]);
+            FindPieceResult firstPieceResultWithOneSpace = findForwardedConnectedPieceCount(board, Piece.BLACK, false, row, col, firstDir[0], firstDir[1]);
+
+            // 두 번째 결과 구하기.
+            FindPieceResult secondPieceResult = findForwardedConnectedPieceCount(board, Piece.BLACK, true, row, col, secondDir[0], secondDir[1]);
+            FindPieceResult secondPieceResultWithOneSpace = findForwardedConnectedPieceCount(board, Piece.BLACK, false, row, col, secondDir[0], secondDir[1]);
+
+            // 결과 조합하기.
+            int candidateCnt = 0;
+
+            // 띄우기 없이 전부 하나로 이어진 경우
+            if (firstPieceResult.getCount() + secondPieceResult.getCount() == 3) {
+                candidateResult[0] = firstPieceResult;
+                candidateResult[1] = secondPieceResult;
+                candidateCnt++;
+            }
+
+            // 하나는 붙인 경우, 하나는 띄운 경우 && 1번 조합과 갯수가 다른 경우
+            if (firstPieceResult.getCount() + secondPieceResultWithOneSpace.getCount() == 3
+                && secondPieceResult.getCount() != secondPieceResultWithOneSpace.getCount()) {
+                candidateResult[0] = firstPieceResult;
+                candidateResult[1] = secondPieceResultWithOneSpace;
+                candidateCnt++;
+            }
+
+            // 하나는 띄운 경우, 하나는 붙인 경우 && 1번 조합과 갯수가 다른 경우
+            if (firstPieceResultWithOneSpace.getCount() + secondPieceResult.getCount() == 3
+                && firstPieceResult.getCount() != firstPieceResultWithOneSpace.getCount()) {
+                candidateResult[0] = firstPieceResultWithOneSpace;
+                candidateResult[1] = secondPieceResult;
+                candidateCnt++;
+            }
+
+            // 유일한 조합 이외에 또 다른 조합이 있다면, 3에 해당 되지 않음.
+            if (candidateCnt != 1) {
+                continue;
+            }
+
+            fourCnt++;
+
         }
 
-        return false;
+        return fourCnt >= 2;
     }
 
     // 기점으로 부터 지정한 방향으로 쭉 연결된 지정된 오목돌의 갯수를 반환하는 함수
