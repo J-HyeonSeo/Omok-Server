@@ -21,6 +21,16 @@
 - 오목의 규칙에 맞게 돌을 두었는지 유효성 검증(validation)을 수행합니다.
 - 돌을 둔 이후에 어떤 이가 승리하였는지 여부를 판단합니다.
 
+### 블로그 포스팅
+
+- [[유니티 + 스프링] 오목게임을 개발하자(1) - 설계 및 Figma로 UI구성](https://blog.naver.com/jhsfully/223451486323)
+- [[유니티 + 스프링] 오목게임을 개발하자(2) - Unity로 메인UI 구성](https://blog.naver.com/jhsfully/223451538892)
+- [[유니티 + 스프링] 오목게임을 개발하자(3) - Unity로 모달창 구성](https://blog.naver.com/jhsfully/223465871156)
+- [[유니티 + 스프링] 오목게임을 개발하자(4) - Unity에서 모서리 Round 처리하기](https://blog.naver.com/jhsfully/223480877654)
+- [[유니티 + 스프링] 오목게임을 개발하자(5) - 백엔드 서버 개발](https://blog.naver.com/jhsfully/223504380232)
+- [[유니티 + 스프링] 오목게임을 개발하자(6) - 메인 화면 연동](https://blog.naver.com/jhsfully/223551307962)
+- [[유니티 + 스프링] 오목게임을 개발하자(7) - 인게임 구성 및 연동](https://blog.naver.com/jhsfully/223551343709)
+
 ---
 
 ## 사용한 라이브러리
