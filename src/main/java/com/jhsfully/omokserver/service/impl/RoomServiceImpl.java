@@ -75,32 +75,4 @@ public class RoomServiceImpl implements RoomService {
         return new RoomCreateAndEnterDto(room.getRoomId(), tokenProvider.generateAccessToken(playerId), playerId);
     }
 
-    @Override
-    public void exitRoom(String roomId, String playerId) {
-        Room room = roomRepository.findById(roomId).orElseThrow();
-
-        if (room.getPlayerIdList().stream().noneMatch(x -> x.equals(playerId))) {
-            throw new RuntimeException("권한이 없습니다.");
-        }
-
-        // Player 대상에서 제외합니다.
-        room.getPlayerIdList().remove(playerId);
-
-        // 플레이어가 없다면, 플레이어와 방을 모두 파기합니다.
-        if (room.getPlayerIdList().isEmpty()) {
-            playerRepository.deleteById(playerId);
-            roomRepository.deleteById(roomId);
-            return;
-        }
-
-        // 1명 남았다면, 남은 플레이어를 블랙으로 수정하고, 상태는 WAIT으로 변경합니다.
-        room.setBlackPlayerId(playerId);
-        room.setWhitePlayerId(null);
-        room.setNowState(State.WAIT);
-        room.setTurnedAt(null);
-        room.setBoard(Room.initializeBoard());
-
-        // 수정된 Room을 저장합니다.
-        roomRepository.save(room);
-    }
 }

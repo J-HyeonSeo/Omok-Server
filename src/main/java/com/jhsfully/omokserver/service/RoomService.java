@@ -11,6 +11,5 @@ public interface RoomService {
     List<RoomSimpleDto> getRoomWaitingRoomList();
     RoomCreateAndEnterDto createRoomAndPlayer(CreateRoomRequestDto roomRequestDto);
     RoomCreateAndEnterDto enterRoomAndCreatePlayer(EnterRoomRequestDto roomRequestDto);
-    void exitRoom(String roomId, String playerId);
 
 }

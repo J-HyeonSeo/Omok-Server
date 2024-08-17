@@ -1,5 +1,5 @@
 package com.jhsfully.omokserver.type;
 
 public enum State {
-    BLACK, WHITE, WAIT, DISCONNECTED
+    BLACK, WHITE, WAIT
 }
