@@ -55,8 +55,21 @@ public class GameServiceImpl implements GameService {
             log.info(otherPlayerConnectedDiff + "");
 
             if (otherPlayerConnectedDiff >= DISCONNECT_LIMIT_SECOND) {
-                room.setNowState(State.DISCONNECTED);
+                room.setWinnerPlayerId(playerId);
             }
+        }
+
+        // 시간 초과에 대한 패배 처리
+        if (otherPlayer != null && !StringUtils.hasText(room.getWinnerPlayerId())) {
+
+            String nowPlayerId = room.getNowState() == State.BLACK ? room.getBlackPlayerId() : room.getWhitePlayerId();
+
+            long diffSeconds = ChronoUnit.SECONDS.between(room.getTurnedAt(), LocalDateTime.now());
+
+            if (diffSeconds > TURN_TIME) {
+                room.setWinnerPlayerId(Objects.requireNonNull(getOtherPlayer(room, nowPlayerId)).getPlayerId());
+            }
+
         }
 
         Room updatedRoom = roomRepository.save(room);
@@ -129,27 +142,16 @@ public class GameServiceImpl implements GameService {
 
         log.info("시간 차이 => {}", diffSeconds);
 
+        String nowPlayerId = room.getNowState() == State.BLACK ? room.getBlackPlayerId() : room.getWhitePlayerId();
+
         // 현재 턴 타임 안에 있는 경우
         if (diffSeconds <= TURN_TIME) {
-
-            String nowPlayerId = room.getNowState() == State.BLACK ? room.getBlackPlayerId() : room.getWhitePlayerId();
-
             if (!playerId.equals(nowPlayerId)) {
                 throw new RuntimeException("현재 턴이 아닙니다.");
             }
-
-        } else { // 턴 타임이 초과 된 경우, 반대로 고려 할 것!
-
-            String nowPlayerId = room.getNowState() == State.WHITE ? room.getBlackPlayerId() : room.getWhitePlayerId();
-
-            // State 업데이트
-            room.setNowState(room.getNowState() == State.BLACK ? State.WHITE : State.BLACK);
+        } else { // 턴 타임이 초과 된 경우, 현재 플레이어를 패배 처리 할 것!.
+            room.setWinnerPlayerId(Objects.requireNonNull(getOtherPlayer(room, nowPlayerId)).getPlayerId());
             roomRepository.save(room);
-
-            if (!playerId.equals(nowPlayerId)) {
-                throw new RuntimeException("현재 턴이 아닙니다.");
-            }
-
         }
     }
 
