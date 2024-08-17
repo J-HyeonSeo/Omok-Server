@@ -52,7 +52,7 @@ public class RoomServiceImpl implements RoomService {
         Room createdRoom = roomRepository.save(room);
 
         return new RoomCreateAndEnterDto(createdRoom.getRoomId(),
-            tokenProvider.generateAccessToken(playerId));
+            tokenProvider.generateAccessToken(playerId), playerId);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class RoomServiceImpl implements RoomService {
         room.setTurnedAt(LocalDateTime.now());
         roomRepository.save(room);
 
-        return new RoomCreateAndEnterDto(room.getRoomId(), tokenProvider.generateAccessToken(playerId));
+        return new RoomCreateAndEnterDto(room.getRoomId(), tokenProvider.generateAccessToken(playerId), playerId);
     }
 
     @Override

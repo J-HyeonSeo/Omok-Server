@@ -33,8 +33,6 @@ public class GameServiceImpl implements GameService {
     @Override
     public RoomDetailDto getGameData(String roomId, String playerId) {
 
-        log.info("{}가 진입하였습니다.", playerId);
-
         Room room = roomRepository.findById(roomId).orElseThrow();
         Player player = playerRepository.findById(playerId).orElseThrow();
 

@@ -11,5 +11,6 @@ public class RoomCreateAndEnterDto {
 
     private String roomId;
     private String accessToken;
+    private String playerId;
 
 }
